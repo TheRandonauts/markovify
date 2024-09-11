@@ -1,12 +1,16 @@
-import random
+from randonautentropy import rndo
 import operator
 import bisect
 import json
 import copy
+import struct
 
 BEGIN = "___BEGIN__"
 END = "___END__"
 
+def hex_to_uniform(hex_string):
+    byte_data = bytes.fromhex(hex_string)
+    return [struct.unpack('>I', byte_data[i:i + 4])[0] / 2**32 for i in range(0, len(byte_data), 4)]
 
 def accumulate(iterable, func=operator.add):
     """
@@ -46,6 +50,7 @@ class Chain:
         """
         self.state_size = state_size
         self.model = model or self.build(corpus, self.state_size)
+        self.uniforms = hex_to_uniform(rndo.get(length=1000))
         self.compiled = (len(self.model) > 0) and (
             type(self.model[tuple([BEGIN] * state_size)]) == list
         )
@@ -115,7 +120,11 @@ class Chain:
         else:
             choices, weights = zip(*self.model[state].items())
             cumdist = list(accumulate(weights))
-        r = random.random() * cumdist[-1]
+        
+        if len(self.uniforms) < 1:
+            self.uniforms = hex_to_uniform(rndo.get(length=500))
+
+        r = self.uniforms.pop(0) * cumdist[-1]
         selection = choices[bisect.bisect(cumdist, r)]
         return selection
 
