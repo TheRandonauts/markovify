@@ -50,7 +50,7 @@ class Chain:
         """
         self.state_size = state_size
         self.model = model or self.build(corpus, self.state_size)
-        self.uniforms = hex_to_uniform(rndo.get(length=1000)["data"])
+        self.uniforms = hex_to_uniform(rndo.get(length=1000))
         self.compiled = (len(self.model) > 0) and (
             type(self.model[tuple([BEGIN] * state_size)]) == list
         )
@@ -122,7 +122,7 @@ class Chain:
             cumdist = list(accumulate(weights))
         
         if len(self.uniforms) < 1:
-            self.uniforms = hex_to_uniform(rndo.get(length=500)["data"])
+            self.uniforms = hex_to_uniform(rndo.get(length=500))
 
         r = self.uniforms.pop(0) * cumdist[-1]
         selection = choices[bisect.bisect(cumdist, r)]
